@@ -1,0 +1,28 @@
+<?php
+require 'vendor/autoload.php';
+
+use PhpOffice\PhpSpreadsheet\Spreadsheet;
+use PhpOffice\PhpSpreadsheet\Reader\Xlsx;
+use PhpOffice\PhpSpreadsheet\Writer\Xlsx as XlsxWriter;
+
+// Caminho para o arquivo Excel
+$filePath = 'seu_arquivo.xlsx';
+
+// Ler o arquivo Excel
+$reader = new Xlsx();
+$spreadsheet = $reader->load($filePath);
+$worksheet = $spreadsheet->getActiveSheet();
+
+// Ler os dados da tabela (exemplo: primeira linha e coluna)
+$data = $worksheet->getCell('A1')->getValue();
+echo "Valor da célula A1: $data<br>";
+
+// Modificar um valor na tabela (exemplo: alterar valor da célula A1)
+$worksheet->getCell('A1')->setValue('Novo Valor');
+
+// Salvar as alterações no arquivo Excel
+$writer = new XlsxWriter($spreadsheet);
+$writer->save($filePath);
+
+echo "Arquivo atualizado com sucesso!<br>";
+?>
