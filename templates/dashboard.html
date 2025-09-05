@@ -1,0 +1,23 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+    <meta charset="utf-8">
+    <title>Dashboard</title>
+    <style>
+        .card {border:1px solid #ccc;padding:10px;margin:10px;display:inline-block;width:200px;text-align:center;}
+        .badge {background-color:red;color:white;padding:3px 6px;border-radius:4px;}
+    </style>
+</head>
+<body>
+    {% for paciente in pacientes %}
+    <div class="card">
+        <h2>{{ paciente.nome }}</h2>
+        <img src="{{ paciente.foto }}" alt="Foto de {{ paciente.nome }}" width="150">
+        <p>Saldo: R$ {{ '%.2f'|format(paciente.saldo_devedor) }}</p>
+        {% if paciente.saldo_devedor > 0 and paciente.tem_atraso %}
+        <span class="badge">Atrasado</span>
+        {% endif %}
+    </div>
+    {% endfor %}
+</body>
+</html>
