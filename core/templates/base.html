@@ -1,0 +1,15 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <title>{% block title %}Sistema{% endblock %}</title>
+</head>
+<body>
+    <nav>
+        <a href="{% url 'paciente_list' %}">Pacientes</a>
+        <a href="{% url 'paciente_create' %}">Novo Paciente</a>
+    </nav>
+    <hr>
+    {% block content %}{% endblock %}
+</body>
+</html>

@@ -1,0 +1,14 @@
+{% extends 'base.html' %}
+{% block title %}{{ paciente.nome_completo }}{% endblock %}
+{% block content %}
+<h1>{{ paciente.nome_completo }}</h1>
+<p>Email: {{ paciente.email }}</p>
+<p>CPF: {{ paciente.cpf }}</p>
+<p>Dia de pagamento: {{ paciente.dia_pagamento }}</p>
+<p>Valor da sessão: {{ paciente.valor_sessao }}</p>
+<p>Saldo devedor: {{ paciente.saldo_devedor }}</p>
+{% if paciente.foto %}
+<img src="{{ paciente.foto.url }}" alt="{{ paciente.nome_completo }}" width="200">
+{% endif %}
+<p><a href="{% url 'paciente_edit' paciente.pk %}">Editar</a></p>
+{% endblock %}

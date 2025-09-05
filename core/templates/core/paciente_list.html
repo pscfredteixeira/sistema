@@ -1,0 +1,20 @@
+{% extends 'base.html' %}
+{% block title %}Pacientes{% endblock %}
+{% block content %}
+<h1>Pacientes</h1>
+<form method="get">
+    <input type="text" name="q" placeholder="Buscar" value="{{ request.GET.q }}">
+    <button type="submit">Buscar</button>
+</form>
+<ul>
+    {% for paciente in pacientes %}
+    <li>
+        <a href="{% url 'paciente_detail' paciente.pk %}">{{ paciente.nome_completo }}</a>
+        ({{ paciente.email }} - {{ paciente.cpf }})
+        <a href="{% url 'paciente_edit' paciente.pk %}">Editar</a>
+    </li>
+    {% empty %}
+    <li>Nenhum paciente encontrado.</li>
+    {% endfor %}
+</ul>
+{% endblock %}
