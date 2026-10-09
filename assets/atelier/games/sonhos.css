@@ -203,3 +203,18 @@
 .dream-entry p{font-size:13px;color:var(--muted);line-height:1.5;margin:0}
 .dream-entry button{min-height:44px}
 @media(max-width:480px){.dream-entry{padding:17px}.dream-entry button{width:100%}.topbar .dream-shortcut{padding:8px 7px;font-size:11px}.topbar .game-shortcut{padding:8px 7px;font-size:11px}}
+
+/* Seis experiências de condensação e álbum de combinações */
+.df-fusion-title{font-size:27px!important;text-align:center;margin:8px 0 2px!important}
+.df-fusion-hint{font-size:12px!important;line-height:1.55!important;margin-bottom:12px!important}
+.df-fusion-art{max-width:360px;filter:drop-shadow(0 12px 17px #080c2475)}
+.df-fusion-album{margin:17px 0 0;padding:15px;border:1px solid rgba(222,197,245,.25);border-radius:12px;background:#18192f}
+.df-fusion-header{display:flex;flex-wrap:wrap;justify-content:space-between;align-items:center;gap:8px;font-size:10px;letter-spacing:.06em;color:#decbaa}
+.df-fusion-header b{font-size:10px}
+.df-fusion-album>p{margin:10px 0 0;font-size:12px}
+.df-fusion-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;margin-top:12px}
+.df-fusion-recall{min-width:0;min-height:53px;padding:9px;border:1px solid #645a7f;border-radius:10px;background:#2e2948;color:#f8e9df;text-align:left;font-size:11px;line-height:1.35;display:flex;align-items:center;gap:7px}
+.df-fusion-recall span{font-size:19px;color:#eed1a5}
+.df-fusion-recall.active{border-color:#edcc9c;background:#514263}
+.df-fusion-recall:focus-visible{outline:3px solid #f4d9aa;outline-offset:2px}
+@media(max-width:430px){.df-fusion-title{font-size:23px!important}.df-fusion-recall{padding:8px;font-size:10px}}

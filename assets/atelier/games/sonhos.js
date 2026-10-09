@@ -25,7 +25,9 @@ var cards=[
  {id:'manifesto2',label:'“Atravessei um palco coberto de chuva.”',type:'manifesto',detail:'Também pertence ao sonho narrado.'},
  {id:'associacao2',label:'“Fiquei apreensivo com uma apresentação.”',type:'associacao',detail:'É um possível elo narrado pela personagem, não uma tradução universal.'}
 ];
-function empty(){return {phase:'intro',found:[],selectedMemory:null,combined:[],condensed:false,spot:null,shifted:false,story:[],storyDone:false,classified:{},classifiedFocus:null,stars:0,best:0,note:'',noteType:'',sound:false};}
+var DREAM_FUSIONS={"mensagem+pressa":{"title":"Relógio-carta","subtitle":"O horário vira mensagem","meaning":"A pressa da apresentação e a mensagem adiada aparecem reunidas em um relógio que também é envelope.","art":"clock"},"ponte+pressa":{"title":"Ponte de ponteiros","subtitle":"Uma travessia marcada pelas horas","meaning":"O relógio transforma-se na estrutura de uma ponte: travessia e apreensão com o horário passam a compartilhar uma cena.","art":"clockbridge"},"chuva+pressa":{"title":"Ampulheta de chuva","subtitle":"O tempo cai como chuva","meaning":"Os minutos parecem gotas dentro da ampulheta. A previsão de chuva e a pressão de chegar a tempo se encontram.","art":"rainclock"},"mensagem+ponte":{"title":"Ponte de envelopes","subtitle":"As palavras viram um caminho","meaning":"Cartas compõem uma passagem impossível: a ponte interditada e a conversa adiada participam da mesma arquitetura.","art":"lettersbridge"},"chuva+mensagem":{"title":"Nuvem de cartas","subtitle":"Uma tempestade de palavras","meaning":"Da nuvem, chovem pequenos envelopes em vez de gotas. A previsão de chuva encontra a mensagem que não foi enviada.","art":"rainletters"},"chuva+ponte":{"title":"Guarda-chuva-passarela","subtitle":"Travessia sob um teto impossível","meaning":"Um grande guarda-chuva torna-se passarela: a travessia interrompida e a previsão do tempo se encontram numa forma nova.","art":"umbrellabridge"}};
+function dreamFusionKey(ids){return ids.slice().sort().join('+');}
+function empty(){return {phase:'intro',found:[],selectedMemory:null,combined:[],condensed:false,fusionsSeen:[],activeFusion:null,spot:null,shifted:false,story:[],storyDone:false,classified:{},classifiedFocus:null,stars:0,best:0,note:'',noteType:'',sound:false};}
 var state=empty();
 try{
  var previous=JSON.parse(localStorage.getItem(STORAGE)||'null');
@@ -33,6 +35,13 @@ try{
   state=Object.assign(empty(),previous);
   state.found=Array.isArray(state.found)?state.found.filter(function(n){return memories.some(function(x){return x.id===n;});}).slice(0,3):[];
   state.combined=Array.isArray(state.combined)?state.combined.filter(function(x){return latent.some(function(y){return y.id===x;});}).slice(0,2):[];
+  state.fusionsSeen=Array.isArray(state.fusionsSeen)?Array.from(new Set(state.fusionsSeen.filter(function(k){return !!DREAM_FUSIONS[k];}))).slice(0,6):[];
+  state.activeFusion=state.activeFusion&&DREAM_FUSIONS[state.activeFusion]?state.activeFusion:null;
+  if(state.condensed&&!state.activeFusion&&state.combined.length===2){
+    var oldKey=dreamFusionKey(state.combined);
+    if(DREAM_FUSIONS[oldKey])state.activeFusion=oldKey;
+  }
+  if(state.activeFusion&&!state.fusionsSeen.includes(state.activeFusion))state.fusionsSeen.push(state.activeFusion);
   state.story=Array.isArray(state.story)?state.story.filter(function(x){return frames.some(function(y){return y.id===x;});}).slice(0,3):[];
   state.classified=state.classified&&typeof state.classified==='object'?state.classified:{};
   state.stars=Math.min(5,Math.max(0,Number(state.stars)||0));
@@ -84,16 +93,31 @@ function clockArt(reveal){
  '<circle cx="108" cy="123" r="57" fill="#252544" stroke="#f0dfad" stroke-width="5"/><path d="M108 123 L108 92 M108 123 L128 135" stroke="#fff5d4" stroke-width="5" stroke-linecap="round"/><path d="M197 94 L288 94 L288 159 L197 159 Z" fill="#dfc9ed" stroke="#302c57" stroke-width="3"/><path d="M198 95 L242 128 L288 95" fill="none" stroke="#675b91" stroke-width="3"/><path d="M161 120 L187 120" stroke="#b9accd" stroke-dasharray="4 6" stroke-width="3"/>')+
  '<g fill="#f5dba9"><circle cx="35" cy="63" r="3"/><circle cx="307" cy="61" r="3"/><path d="M291 177 l5 12 l-5 12 l-5 -12Z"/></g></svg>';
 }
+
+function dreamArt(key){
+ if(key==='mensagem+pressa')return clockArt(true);
+ var shapes={
+ clockbridge:'<path d="M30 188 Q170 75 310 188" fill="none" stroke="#eecaa6" stroke-width="15" stroke-linecap="round"/><path d="M40 190 Q170 114 300 190" fill="none" stroke="#72628a" stroke-width="7"/><path d="M43 193 H296" stroke="#dac5dd" stroke-width="5" stroke-dasharray="13 8"/><path d="M64 184 V120 M277 184 V120 M110 156 V104 M234 156 V104" stroke="#9d8eb5" stroke-width="4"/><circle cx="170" cy="102" r="49" fill="#282544" stroke="#e4cc9b" stroke-width="7"/><circle cx="170" cy="102" r="36" fill="none" stroke="#bdb2de" stroke-width="3" stroke-dasharray="3 8"/><path d="M170 102 L170 73 M170 102 L189 114" stroke="#fff0d1" stroke-width="5" stroke-linecap="round"/>',
+ rainclock:'<path d="M115 40 H225 M115 206 H225" stroke="#efd1a8" stroke-width="9" stroke-linecap="round"/><path d="M121 49 L218 49 Q218 89 170 124 Q122 91 121 49 Z" fill="#ad9dcc77" stroke="#d9c5ec" stroke-width="3"/><path d="M170 124 Q216 157 218 199 L121 199 Q122 159 170 124 Z" fill="#998bc299" stroke="#d9c5ec" stroke-width="3"/><path d="M170 128 V181" stroke="#c5dafa" stroke-width="6" stroke-dasharray="7 8"/><path d="M130 191 Q170 159 210 191" fill="#b1cdf0"/><g stroke="#afcff7" stroke-width="5" stroke-linecap="round"><path d="M73 70 l-8 20 M261 70 l8 20 M87 126 l-8 20 M250 129 l8 20 M98 180 l-8 20"/></g><circle cx="170" cy="86" r="23" fill="#363354" stroke="#f0d5ad" stroke-width="3"/><path d="M170 86 V69 M170 86 l11 7" stroke="#fff0d7" stroke-width="3" fill="none"/>',
+ lettersbridge:'<path d="M26 185 Q170 55 314 185" fill="none" stroke="#e4ba9c" stroke-width="12" stroke-linecap="round"/><path d="M40 198 Q170 125 300 198" fill="none" stroke="#9385b8" stroke-width="12" stroke-linecap="round"/><path d="M55 192 H285" stroke="#eadcca" stroke-width="6" stroke-dasharray="10 5"/><g fill="#e5d2e9" stroke="#74628f" stroke-width="3"><rect x="52" y="155" width="60" height="44" rx="4" transform="rotate(-17 82 177)"/><rect x="140" y="113" width="60" height="44" rx="4"/><rect x="228" y="155" width="60" height="44" rx="4" transform="rotate(17 258 177)"/></g><g fill="none" stroke="#6b5b92" stroke-width="3"><path d="M52 157 L82 184 L112 157" transform="rotate(-17 82 177)"/><path d="M140 115 L170 140 L200 115"/><path d="M228 157 L258 184 L288 157" transform="rotate(17 258 177)"/></g>',
+ rainletters:'<path d="M93 107 Q78 73 109 61 Q116 33 149 47 Q176 16 207 49 Q243 40 250 74 Q278 93 245 115 H110 Q87 113 93 107 Z" fill="#c5b7e7" stroke="#eee3ff" stroke-width="4"/><g stroke="#b8d7f2" stroke-width="5" stroke-linecap="round"><path d="M116 130 L110 151 M230 136 L226 158 M171 145 L165 167"/></g><g fill="#f4daba" stroke="#715f97" stroke-width="3"><rect x="71" y="169" width="56" height="38" rx="4" transform="rotate(-19 99 188)"/><rect x="143" y="172" width="60" height="41" rx="4"/><rect x="222" y="167" width="52" height="36" rx="4" transform="rotate(16 248 185)"/></g><g fill="none" stroke="#866e9f" stroke-width="3"><path d="M71 169 L99 188 L127 169" transform="rotate(-19 99 188)"/><path d="M143 172 L173 191 L203 172"/><path d="M222 167 L248 185 L274 167" transform="rotate(16 248 185)"/></g>',
+ umbrellabridge:'<path d="M43 133 Q80 38 169 38 Q260 38 297 133 Q269 113 242 137 Q220 114 190 139 Q165 117 141 139 Q113 113 90 137 Q64 114 43 133 Z" fill="#b5a0df" stroke="#f0d7bc" stroke-width="5"/><path d="M169 40 V194 Q169 221 191 219 Q206 216 207 203" fill="none" stroke="#efd6ad" stroke-width="7" stroke-linecap="round"/><path d="M50 177 Q169 218 290 177" stroke="#e2d2e7" stroke-width="15" fill="none" stroke-linecap="round"/><path d="M50 177 Q169 218 290 177" stroke="#7d729f" stroke-width="5" fill="none" stroke-dasharray="14 8"/><g fill="none" stroke="#9fc6ea" stroke-width="4" stroke-linecap="round"><path d="M35 48 L26 66 M46 88 L38 106 M295 48 L304 66 M307 93 L299 111 M276 146 L268 165 M64 144 L56 163"/></g><circle cx="169" cy="40" r="8" fill="#ffdfab"/>'
+ };
+ var f=DREAM_FUSIONS[key];
+ return '<svg class="df-illustration df-fusion-art" viewBox="0 0 340 245" role="img" aria-label="'+esc(f?f.title:'Tela de imagens por formar')+'"><defs><radialGradient id="df-dream-glow"><stop stop-color="#6b5d9c" stop-opacity=".6"/><stop offset="1" stop-color="#242039" stop-opacity="0"/></radialGradient></defs><ellipse cx="170" cy="124" rx="145" ry="108" fill="url(#df-dream-glow)"/><g fill="#f3e2ae"><circle cx="28" cy="45" r="3"/><circle cx="307" cy="67" r="3"/><circle cx="44" cy="205" r="2"/><path d="M298 199 l4 9 l4 -9 l-4 -9Z"/></g>'+(f?shapes[f.art]:'<circle cx="170" cy="112" r="53" stroke="#e6d0ae" stroke-dasharray="5 11" fill="none"/><path d="M170 69 V155 M126 112 H214" stroke="#d8bbe4" stroke-width="3" stroke-dasharray="7 8"/>')+'</svg>';
+}
 function condense(){
- var correct=state.combined.includes('pressa')&&state.combined.includes('mensagem');
- return '<div class="df-headline"><span class="df-eyebrow">CAPÍTULO 2 · A OFICINA DAS TRANSFORMAÇÕES</span><h2>Duas lembranças. Uma imagem.</h2><p>No sonho, apareceu um relógio com asas de envelope. Quais <strong>dois elementos da história</strong> poderiam ter participado desta imagem inventada?</p></div>'+
- '<div class="df-stage-grid"><div class="df-canvas"><span class="df-canvas-label">'+(state.condensed?'CONDENSAÇÃO REALIZADA':'A IMAGEM AINDA ESTÁ EM FORMAÇÃO')+'</span>'+clockArt(state.condensed)+'<p class="df-canvas-caption">'+(state.condensed?'Várias linhas de associação foram reunidas em uma figura.':'Escolha dois fragmentos; veja a figura ganhar outra forma.')+'</p></div>'+
- '<div class="df-play-panel"><h3>Escolha dois fragmentos</h3><div class="df-tile-grid">'+latent.map(function(x){var on=state.combined.includes(x.id);return '<button type="button" class="df-tile '+(on?'selected':'')+'" data-dream="fragment" data-value="'+x.id+'" aria-pressed="'+on+'" '+(state.condensed?'disabled':'')+'><b>'+x.icon+'</b><span>'+esc(x.label)+'</span></button>';}).join('')+'</div>'+
+ var found=state.activeFusion&&DREAM_FUSIONS[state.activeFusion];
+ return '<div class="df-headline"><span class="df-eyebrow">CAPÍTULO 2 · A OFICINA DAS TRANSFORMAÇÕES</span><h2>Duas lembranças. Muitas imagens possíveis.</h2><p>Combine quaisquer dois fragmentos: <strong>cada dupla cria uma imagem diferente</strong>. As seis misturas são invenções sobre a história da personagem. Não existe uma única resposta correta.</p></div>'+
+ '<div class="df-stage-grid"><div class="df-canvas"><span class="df-canvas-label">'+(found?'TRANSFORMAÇÃO · '+esc(found.subtitle):'A IMAGEM AINDA ESTÁ EM FORMAÇÃO')+'</span>'+dreamArt(state.activeFusion)+'<h3 class="df-fusion-title">'+(found?esc(found.title):'A tela dos possíveis')+'</h3><p class="df-canvas-caption">'+(found?esc(found.meaning):'Escolha dois fragmentos e toque em Misturar. Uma nova cena vai aparecer aqui.')+'</p></div>'+
+ '<div class="df-play-panel"><h3>Escolha dois fragmentos</h3><p class="df-fusion-hint">Selecione dois elementos. Ao tocar em um terceiro, você substitui o mais antigo da dupla. Depois misture novamente.</p><div class="df-tile-grid">'+latent.map(function(x){var on=state.combined.includes(x.id);return '<button type="button" class="df-tile '+(on?'selected':'')+'" data-dream="fragment" data-value="'+x.id+'" aria-pressed="'+on+'"><b>'+x.icon+'</b><span>'+esc(x.label)+'</span></button>';}).join('')+'</div>'+
  '<div class="df-tile-status">'+state.combined.length+' / 2 fragmentos escolhidos</div>'+
- btn('mix','Misturar os fragmentos ✧',{cls:'df-btn df-primary df-full',disabled:state.combined.length!==2||state.condensed})+
- (state.condensed?'<div class="df-learn"><b>DESCOBERTA · CONDENSAÇÃO</b><p>Na elaboração freudiana, uma formação onírica pode reunir diferentes cadeias de pensamentos. Neste exemplo, pressa e mensagem se encontram num relógio-carta.</p></div>':'')+
- btn('toShift','Avançar para a sala de luz →',{cls:'df-btn df-secondary df-full',disabled:!state.condensed})+
- '<p class="df-side-note">Estas associações pertencem apenas à nossa personagem fictícia; imagens oníricas não trazem significados fixos.</p></div></div>';
+ btn('mix','✦ Misturar estes fragmentos',{cls:'df-btn df-primary df-full',disabled:state.combined.length!==2})+
+ (found?'<div class="df-learn"><b>DESCOBERTA · CONDENSAÇÃO</b><p>'+esc(found.meaning)+'</p><p>Este resultado é uma metáfora educativa, não uma interpretação automática de sonhos reais.</p></div>':'')+
+ '<div class="df-fusion-album"><div class="df-fusion-header"><b>SEU ÁLBUM DE IMAGENS</b><span>'+state.fusionsSeen.length+' / 6 descobertas</span></div>'+
+ (state.fusionsSeen.length?'<div class="df-fusion-grid">'+state.fusionsSeen.map(function(k){return '<button type="button" class="df-fusion-recall '+(state.activeFusion===k?'active':'')+'" data-dream="recall" data-value="'+esc(k)+'"><span>✧</span>'+esc(DREAM_FUSIONS[k].title)+'</button>';}).join('')+'</div>':'<p>As imagens inventadas aparecerão aqui. Você pode revisitar cada uma.</p>')+'</div>'+
+ btn('toShift','Seguir para a sala de luz →',{cls:'df-btn df-secondary df-full',disabled:!state.condensed})+
+ '<p class="df-side-note">Na formulação freudiana, mais de uma cadeia de pensamentos pode participar da figuração de um único elemento do sonho. As misturas são exemplos ficcionais, não símbolos de significado fixo.</p></div></div>';
 }
 function shiftScene(){
  var opts=[
@@ -118,7 +142,7 @@ function filmStrip(){
  }).join('')+'</div>';
 }
 function montage(){
- return '<div class="df-headline"><span class="df-eyebrow">CAPÍTULO 3 · A SALA DE MONTAGEM</span><h2>Costure uma história impossível.</h2><p>O sonho deixou três fragmentos soltos. Escolha <strong>a ordem</strong> em que a personagem poderia contá-los ao acordar. Não há ordem única: a proposta é observar como tentamos dar continuidade ao relato.</p></div>'+
+ return '<div class="df-headline"><span class="df-eyebrow">CAPÍTULO 3 · A SALA DE MONTAGEM</span><h2>Costure uma história impossível.</h2><p>Depois de inventar imagens possíveis na oficina, volte ao sonho relatado pela personagem. Escolha <strong>a ordem</strong> em que a personagem poderia contá-los ao acordar. Não há ordem única: a proposta é observar como tentamos dar continuidade ao relato.</p></div>'+
  '<div class="df-montage">'+filmStrip()+'<div class="df-montage-controls"><h3>Adicione uma cena ao filme</h3><div class="df-scene-list">'+frames.map(function(f){var used=state.story.includes(f.id);return '<button type="button" data-dream="scene" data-value="'+f.id+'" '+(used||state.storyDone?'disabled':'')+' class="df-scene-choice"><span class="df-scene-icon">'+f.icon+'</span><span><b>'+esc(f.label)+'</b><small>'+esc(f.detail)+'</small></span><span class="df-add">'+(used?'✓':'+')+'</span></button>';}).join('')+'</div><div class="df-edit-actions">'+btn('undoScene','↶ Desfazer último',{cls:'df-btn df-secondary',disabled:state.storyDone||!state.story.length})+btn('sealStory','Revelar a montagem ✦',{cls:'df-btn df-primary',disabled:state.story.length!==3||state.storyDone})+'</div>'+
  (state.storyDone?'<div class="df-learn"><b>DESCOBERTA · ELABORAÇÃO SECUNDÁRIA</b><p>Você encadeou cenas descontínuas e formou um relato aparentemente coerente. Freud discute como o sonho pode ganhar ligações e aparência narrativa. Nosso jogo é uma metáfora, não uma reprodução literal do processo psíquico.</p></div>':'')+
  btn('toClassify','Abrir o último arquivo →',{cls:'df-btn df-secondary df-full',disabled:!state.storyDone})+'</div></div>';
@@ -160,15 +184,23 @@ function update(action,value){
   if(state.found.length===3){seal(1);tip('As três pistas estão no diário! A oficina foi aberta.',true);}
  }
  else if(action==='toCondense'&&state.found.length===3)state.phase='condense';
- else if(action==='fragment'&&state.phase==='condense'&&!state.condensed){
-  var valid=latent.some(function(x){return x.id===value;});if(!valid)return;
+ else if(action==='fragment'&&state.phase==='condense'){
+  if(!latent.some(function(x){return x.id===value;}))return;
   if(state.combined.includes(value))state.combined=state.combined.filter(function(x){return x!==value;});
-  else if(state.combined.length<2)state.combined.push(value);
-  else tip('Escolha apenas dois fragmentos. Toque em um já selecionado para trocar.',false);
+  else if(state.combined.length===2)state.combined=[state.combined[1],value];
+  else state.combined.push(value);
  }
  else if(action==='mix'&&state.phase==='condense'&&state.combined.length===2){
-  if(state.combined.includes('pressa')&&state.combined.includes('mensagem')){state.condensed=true;seal(2);tip('Uma imagem, mais de um caminho de associação. Você descobriu a condensação!',true);}
-  else tip('Observe o desenho: um relógio encontra uma carta. Quais lembranças conversam com essas duas formas?',false);
+  var k=dreamFusionKey(state.combined),f=DREAM_FUSIONS[k];
+  if(f){state.activeFusion=k;state.condensed=true;
+   if(!state.fusionsSeen.includes(k))state.fusionsSeen.push(k);
+   seal(2);
+   tip('Você criou: '+f.title+'. Experimente outra dupla ou siga na aventura!',true);
+  }
+ }
+ else if(action==='recall'&&state.phase==='condense'&&state.fusionsSeen.includes(value)&&DREAM_FUSIONS[value]){
+  state.activeFusion=value;state.combined=value.split('+');
+  tip('Você revisitou a criação: '+DREAM_FUSIONS[value].title+'.',true);
  }
  else if(action==='toShift'&&state.condensed)state.phase='shift';
  else if(action==='spot'&&state.phase==='shift'&&!state.shifted && ['palco','botao','carta'].includes(value))state.spot=value;
