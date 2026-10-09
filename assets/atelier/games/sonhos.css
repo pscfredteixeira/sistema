@@ -193,3 +193,13 @@
 }
 @media(hover:hover) and (pointer:fine){.df-root .df-btn:not(:disabled):hover,.df-root .df-scene-choice:not(:disabled):hover,.df-root .df-tile:not(:disabled):hover,.df-root .df-evidence:not(:disabled):hover{border-color:#f0d8b8;filter:brightness(1.09)}}
 @media(prefers-reduced-motion:reduce){.df-root *, .df-root *::before,.df-root *::after{animation:none!important;transition:none!important;scroll-behavior:auto!important}}
+
+/* Entry points for dream game within the existing responsive application */
+.dream-shortcut{background:transparent!important;border-color:var(--sage)!important;color:var(--text)!important;white-space:nowrap;font-weight:750}
+.dream-entry{display:flex;align-items:center;justify-content:space-between;gap:15px;flex-wrap:wrap;border:1px solid #9786ab;padding:20px 22px;margin:15px 0 25px;background:linear-gradient(125deg,rgba(134,111,163,.2),rgba(65,57,94,.12));border-radius:16px}
+.dream-entry>div{min-width:0;flex:1 1 225px}
+.dream-entry>div>span{font-size:10px;letter-spacing:.14em;color:var(--sage);font-weight:800}
+.dream-entry strong{display:block;font-family:Georgia,serif;font-size:26px;font-weight:400;margin:7px 0}
+.dream-entry p{font-size:13px;color:var(--muted);line-height:1.5;margin:0}
+.dream-entry button{min-height:44px}
+@media(max-width:480px){.dream-entry{padding:17px}.dream-entry button{width:100%}.topbar .dream-shortcut{padding:8px 7px;font-size:11px}.topbar .game-shortcut{padding:8px 7px;font-size:11px}}

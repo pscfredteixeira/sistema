@@ -32,7 +32,7 @@ try{
  if(previous && typeof previous==='object' && PHASES.indexOf(previous.phase)>=0){
   state=Object.assign(empty(),previous);
   state.found=Array.isArray(state.found)?state.found.filter(function(n){return memories.some(function(x){return x.id===n;});}).slice(0,3):[];
-  state.combined=Array.isArray(state.combined)?state.combined.filter(function(x){return latent.some(function(y){return y.id===x.id;});}).slice(0,2):[];
+  state.combined=Array.isArray(state.combined)?state.combined.filter(function(x){return latent.some(function(y){return y.id===x;});}).slice(0,2):[];
   state.story=Array.isArray(state.story)?state.story.filter(function(x){return frames.some(function(y){return y.id===x;});}).slice(0,3):[];
   state.classified=state.classified&&typeof state.classified==='object'?state.classified:{};
   state.stars=Math.min(5,Math.max(0,Number(state.stars)||0));
