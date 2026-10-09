@@ -4,14 +4,14 @@
 const ALL=window.AtelierLostWordCases||[];
 const KEY='atelier_palavras_perdidas_v1';
 const PHASES=['intro','desk','sequence','theory','report','solved','end'];
-const fresh=()=>({phase:'intro',caseIndex:0,seen:[],selected:0,compare:false,chain:[],picked:[],verdict:null,score:0,scores:[],granted:{clues:[],sequence:false,theory:false,report:false},feedback:'',good:false,mistakes:0});
+const fresh=()=>({phase:'intro',caseIndex:0,seen:[],selected:null,compare:false,chain:[],picked:[],verdict:null,score:0,scores:[],granted:{clues:[],sequence:false,theory:false,report:false},feedback:'',good:false,mistakes:0});
 let state=fresh();
 function esc(x){return String(x==null?'':x).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;','\'':'&#39;'}[c]));}
 function restore(){
  try{const saved=JSON.parse(localStorage.getItem(KEY)||'null');if(!saved||!PHASES.includes(saved.phase))return;state={...fresh(),...saved};
   state.caseIndex=Math.max(0,Math.min(ALL.length-1,Number(state.caseIndex)||0));
   state.seen=Array.isArray(state.seen)?Array.from(new Set(state.seen.filter(x=>Number.isInteger(x)&&x>=0&&x<4))):[];
-  state.selected=Math.max(0,Math.min(3,Number(state.selected)||0));
+  state.selected=state.selected===null?null:Math.max(0,Math.min(3,Number(state.selected)||0));
   state.chain=Array.isArray(state.chain)?Array.from(new Set(state.chain.filter(x=>current().puzzle.some(p=>p[0]===x)))).slice(0,current().order.length):[];
   state.picked=Array.isArray(state.picked)?Array.from(new Set(state.picked.filter(x=>current().hypotheses.some(p=>p[0]===x)))).slice(0,2):[];
   state.scores=Array.isArray(state.scores)?state.scores.slice(0,ALL.length).map(x=>Math.max(0,Math.min(100,Number(x)||0))):[];
@@ -46,8 +46,8 @@ function evidenceVisual(){
  return '<div class="wm-evidence"><div class="wm-evidence-meta"><span>EVIDÊNCIA ORIGINAL</span><span>'+esc(c.doc)+'</span></div><div class="wm-evidence-sheet"><div class="wm-sheet-dots">· · ·</div><small>DOCUMENTO '+c.num+'</small><div class="wm-evidence-word" aria-live="polite">'+esc(state.compare?c.before:c.after)+'</div><div class="wm-evidence-caption">'+esc(c.small)+'</div></div><div class="wm-evidence-footer">'+(state.compare?'VERSÃO ANTERIOR':'REGISTRO OBSERVADO')+'</div>'+button('compare',state.compare?'← Voltar ao registro observado':'Comparar com a versão anterior →','wm-outline wm-wide')+'</div>';
 }
 function desk(){
- const c=current(),clue=c.clues[state.selected],n=state.seen.length;
- return caseIntro()+'<div class="wm-layout"><div>'+evidenceVisual()+'</div><div class="wm-investigate"><div class="wm-sectionhead"><div><span class="wm-kicker">01 · INVESTIGAR</span><h3>Pistas de um mistério</h3></div><strong>'+n+'/4</strong></div><p>Abra os documentos. Cada nova pista vale dez pontos; voltar a consultá-la não custa nada.</p><div class="wm-clues">'+c.clues.map((x,i)=>'<button type="button" class="wm-clue '+(i===state.selected?'on ':'')+(state.seen.includes(i)?'seen':'')+'" data-wm="clue" data-id="'+i+'" aria-pressed="'+(i===state.selected)+'"><span class="wm-clue-glyph">'+x[0]+'</span><span><small>'+esc(x[1])+'</small><b>'+esc(x[2])+'</b></span><i>'+(state.seen.includes(i)?'✓':'+')+'</i></button>').join('')+'</div><div class="wm-clue-description" aria-live="polite"><small>'+esc(clue[1])+'</small><h4>'+esc(clue[2])+'</h4><p>'+esc(clue[3])+'</p></div>'+button('toSequence','Reconstituir os acontecimentos →','wm-primary wm-wide',n!==4)+'</div></div>';
+ const c=current(),clue=state.selected===null?null:c.clues[state.selected],n=state.seen.length;
+ return caseIntro()+'<div class="wm-layout"><div>'+evidenceVisual()+'</div><div class="wm-investigate"><div class="wm-sectionhead"><div><span class="wm-kicker">01 · INVESTIGAR</span><h3>Pistas de um mistério</h3></div><strong>'+n+'/4</strong></div><p>Abra os documentos. Cada nova pista vale dez pontos; voltar a consultá-la não custa nada.</p><div class="wm-clues">'+c.clues.map((x,i)=>'<button type="button" class="wm-clue '+(i===state.selected?'on ':'')+(state.seen.includes(i)?'seen':'')+'" data-wm="clue" data-id="'+i+'" aria-pressed="'+(i===state.selected)+'"><span class="wm-clue-glyph">'+x[0]+'</span><span><small>'+esc(x[1])+'</small><b>'+esc(x[2])+'</b></span><i>'+(state.seen.includes(i)?'✓':'+')+'</i></button>').join('')+'</div><div class="wm-clue-description" aria-live="polite">'+(clue?'<small>'+esc(clue[1])+'</small><h4>'+esc(clue[2])+'</h4><p>'+esc(clue[3])+'</p>':'<small>DOCUMENTO FECHADO</small><h4>O que aconteceu aqui?</h4><p>Toque em um dos quatro documentos para revelar a primeira pista.</p>')+'</div>'+button('toSequence','Reconstituir os acontecimentos →','wm-primary wm-wide',n!==4)+'</div></div>';
 }
 function sequence(){
  const c=current();return caseIntro()+'<div class="wm-layout"><div class="wm-storyboard"><span class="wm-kicker">02 · RECONSTITUIÇÃO</span><h3>O que veio primeiro?</h3><p>'+esc(c.puzzlePrompt)+'</p><div class="wm-chain">'+c.order.map((id,i)=>{const chosen=state.chain[i],x=c.puzzle.find(p=>p[0]===chosen);return '<div class="wm-chain-slot '+(x?'is-filled':'')+'"><span>'+String(i+1).padStart(2,'0')+'</span><strong>'+(x?esc(x[1]):'<em>Selecione uma peça</em>')+'</strong></div>';}).join('')+'</div><div class="wm-row-actions">'+button('undo','↶ Voltar um passo','wm-outline',!state.chain.length)+button('clear','Limpar','wm-outline',!state.chain.length)+'</div></div><div class="wm-investigate"><span class="wm-kicker">PEÇAS DE INVESTIGAÇÃO</span><h3>Monte uma sequência</h3><p>Toque nos acontecimentos na ordem correta. Uma das opções tenta transformar uma hipótese em fato.</p><div class="wm-pieces">'+c.puzzle.map(x=>'<button type="button" class="wm-piece" data-wm="piece" data-id="'+x[0]+'" '+(state.chain.includes(x[0])||state.chain.length===c.order.length?'disabled':'')+'><span>'+x[2]+'</span><b>'+esc(x[1])+'</b><i>'+(state.chain.includes(x[0])?'✓':'+')+'</i></button>').join('')+'</div>'+button('checkSequence','Conferir a sequência','wm-primary wm-wide',state.chain.length!==c.order.length)+'</div></div>';
@@ -75,7 +75,7 @@ function freshCase(){const i=state.caseIndex,scores=state.scores.slice();state=f
 function clickAction(action,val){
  if(!ALL.length)return;
  const c=current(),previousPhase=state.phase;state.feedback='';
- if(action==='start'&&state.phase==='intro'){state.phase='desk';state.selected=0;}
+ if(action==='start'&&state.phase==='intro'){state.phase='desk';state.selected=null;}
  else if(action==='compare'&&state.phase==='desk')state.compare=!state.compare;
  else if(action==='clue'&&state.phase==='desk'){
   const n=Number(val);if(!Number.isInteger(n)||n<0||n>=c.clues.length)return;state.selected=n;
