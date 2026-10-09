@@ -132,7 +132,7 @@ lessons.forEach((l,i)=>{html+=`<div class="lesson-row ${view==='lesson'&&activeL
 html+='<button class="sidebar-add" id="addModuleBtn">＋ Adicionar módulo ao curso</button>';$('#sideScroll').innerHTML=html}
 function updateBreadcrumb(title){$('#crumbA').textContent=course().title.toUpperCase();$('#crumbB').textContent=title}
 function goHome(){view='home';activeLesson=null;render();closeMobile()}
-function goLesson(id){if(!loc(id))return;view='lesson';activeLesson=id;selectedAnswer=quizData[doneId(id)]?.selected??null;activeLab=0;kleinStage=0;kleinCompare=false;winStage=0;winCase=-1;winCompare=false;ndState={step:0,path:0,era:0,choice:-1};lcActiveStep=0;languageState={context:0,metaphor:0,assoc:-1,answer:-1,branch:-1,linkCount:2,compare:false};atReset();lxStage=0;lxCompare=false;lxRevealed=false;lxTimeline=0;lxFormula=0;lxBroken='intact';lxExtra=0;lxDisc=({lx_030:0,lx_031:1,lx_032:2,lx_033:3})[id]??0;expanded={...expanded,[loc(id).m.id]:true};render();closeMobile()}
+function goLesson(id){if(!loc(id))return;view='lesson';activeLesson=id;lacanQuizPhase=quizData[doneId(id)]?.phase??0;selectedAnswer=activeCourse==='seminarios-lacanianos'?(quizData[doneId(id)]?.phases?.[lacanQuizPhase]?.selected??null):(quizData[doneId(id)]?.selected??null);activeLab=0;kleinStage=0;kleinCompare=false;winStage=0;winCase=-1;winCompare=false;ndState={step:0,path:0,era:0,choice:-1};lcActiveStep=0;languageState={context:0,metaphor:0,assoc:-1,answer:-1,branch:-1,linkCount:2,compare:false};atReset();lxStage=0;lxCompare=false;lxRevealed=false;lxTimeline=0;lxFormula=0;lxBroken='intact';lxExtra=0;lxDisc=({lx_030:0,lx_031:1,lx_032:2,lx_033:3})[id]??0;expanded={...expanded,[loc(id).m.id]:true};render();closeMobile()}
 function goView(v){view=v;activeLesson=null;render();closeMobile()}
 function render(){fmStop();refreshNav();let title=view==='home'?'Visão geral':view==='lesson'?(loc(activeLesson)?.l.title||'Aula'):view==='glossary'?'Glossário':'Linha do tempo';updateBreadcrumb(title);let h=view==='home'?renderHome():view==='lesson'?renderLesson():view==='glossary'?renderGlossary():renderTimeline();$('#page').innerHTML=h;window.scrollTo({top:0,behavior:'instant'});$('#page').focus({preventScroll:true})}
 function renderHome(){let c=course(),all=allLessons(),complete=all.filter(l=>isDone(l.id)).length,next=all.find(l=>!isDone(l.id))||all[0];return `<section class="hero"><div class="eyebrow">ATELIER · LABORATÓRIO DE PSICANÁLISE</div><h1 class="serif">${esc(c.title)}</h1><p>${esc(c.subtitle||'Seu espaço para estudar, acompanhar o progresso e construir novas aulas.')}</p>${c.id==='seminarios-lacanianos'?'<div class="atelier-badge">✦ ${all.length} aulas · ${all.filter(l=>l.lx).length+24} experiências interativas para experimentar a teoria</div>':c.id==='seminarios-kleinianos'?'<div class="atelier-badge">✧ 43 aulas · 43 laboratórios conceituais · fontes históricas</div>':c.id==='seminarios-winnicottianos'?'<div class="atelier-badge">✦ 12 aulas aprofundadas · 12 laboratórios interativos · teoria e experiência</div>':''}<div class="hero-actions">${next?`<button class="btn primary" data-lesson="${esc(next.id)}">${complete?'Continuar estudando':'Começar pela primeira aula'} &nbsp;→</button>`:''}<button class="btn" data-action="manage">＋ Criar conteúdo</button></div></section><section class="statrow"><div class="stat"><strong>${c.modules.length}</strong><span>módulos de estudo</span></div><div class="stat"><strong>${all.length}</strong><span>aulas disponíveis</span></div><div class="stat"><strong>${percentage()}%</strong><span>do percurso concluído</span></div></section><div class="section-heading"><h2>Seu percurso</h2><p>Do fundamento à prática, sem pular etapas.</p></div><section class="module-grid">${c.modules.map((m,i)=>{let count=m.lessons.length,completed=m.lessons.filter(l=>isDone(l.id)).length;return `<button class="mod-card" data-lesson="${esc(m.lessons[0]?.id||'')}" ${!count?'disabled':''}><span class="num">UNIDADE ${String(i+1).padStart(2,'0')}</span><h3>${esc(m.title)}</h3><p>${esc(m.description||'Explore os conteúdos desta unidade.')}</p><span class="bottom"><span>${completed} de ${count} aulas estudadas</span><span class="arrow">Explorar →</span></span></button>`}).join('')}</section><div class="banner-note"><b style="color:var(--text)">Você pode continuar construindo este curso.</b> Abra <b>“Adicionar ou editar conteúdo”</b> para criar cursos, módulos e aulas diretamente na plataforma, sem escrever código. As aulas do curso “A Clínica Psicanalítica” foram desenvolvidas a partir de um sumário de tópicos, não são transcrições de conteúdos externos. O progresso e os textos ficam neste navegador; use <b>“Exportar / importar backup”</b> para guardar uma cópia ou levar o curso a outro dispositivo.</div>`}
@@ -681,6 +681,91 @@ function updateAtelierFont(next){
  if(less)less.disabled=atelierFontIndex===0;
  if(more)more.disabled=atelierFontIndex===ATELIER_FONT_LEVELS.length-1;
 }
+
+/* Atelier | Verificacao lacaniana em tres fases.
+   A primeira e a pergunta editorial original; as outras derivam dos conceitos
+   e dos passos publicados da propria aula, evitando conteudo inventado. */
+let lacanQuizPhase=0;
+function lacanQuizQuestions(l){
+ const base=l.quiz||{};
+ const terms=(l.terms||[]).filter(t=>t&&t.term&&t.desc);
+ const context=loc(l.id),neighbor=context?.m?.lessons||[];
+ const pool=[...terms,...neighbor.flatMap(x=>x.terms||[])];
+ const unique=[...new Map(pool.filter(t=>t&&t.term&&t.desc).map(t=>[t.term.toLocaleLowerCase('pt-BR'),t])).values()];
+ const concept=terms[0]||unique[0];
+ const distractors=unique.filter(t=>t.term!==concept?.term).slice(0,2);
+ const termsOptions=[concept?.term,...distractors.map(x=>x.term)].filter(Boolean);
+ while(termsOptions.length<3)termsOptions.push('Conceito não indicado '+termsOptions.length);
+ const shifted=(l.id.length+l.id.charCodeAt(l.id.length-1))%3;
+ const shuffled=termsOptions.slice(shifted).concat(termsOptions.slice(0,shifted));
+ const second={
+  question:'Qual conceito corresponde a esta definição? “'+String(concept?.desc||'')+'”',
+  options:shuffled,correct:shuffled.indexOf(concept?.term),
+  feedback:'Na aula, “'+String(concept?.term||'')+'” é apresentado assim: '+String(concept?.desc||'')
+ };
+ let steps=[],title='',texts=[];
+ if(Array.isArray(l.lx?.steps)&&l.lx.steps.length>=3){
+  steps=l.lx.steps;title=steps[1].title;
+  texts=steps.slice(0,3).map(x=>String(x.text||''));
+ }else if(typeof LC_LABS!=='undefined'&&LC_LABS[l.id]?.steps?.length>=3){
+  steps=LC_LABS[l.id].steps;title=steps[1][0];
+  texts=steps.slice(0,3).map(x=>String(x[2]||''));
+ }else if(typeof ATELIER_LABS!=='undefined'&&ATELIER_LABS[l.id]?.choices?.length>=3){
+  steps=ATELIER_LABS[l.id].choices;title=steps[1].label;
+  texts=steps.slice(0,3).map(x=>String(x.reading||''));
+ }
+ let third;
+ if(texts.length===3&&texts.every(x=>x.length>20)){
+  const options=texts.map(t=>t.replace(/\s+/g,' ').trim().slice(0,250));
+  third={question:'Na experiência desta aula, qual explicação corresponde a “'+title+'”?',
+   options,correct:1,feedback:'A etapa “'+title+'” destaca: '+options[1]};
+ }else{
+  const next=terms[1]||unique[1], descriptions=[next?.desc,...unique.filter(t=>t.term!==next?.term).slice(0,2).map(t=>t.desc)].filter(Boolean);
+  while(descriptions.length<3)descriptions.push('Descrição indisponível');
+  const rotate=descriptions.slice(1).concat(descriptions.slice(0,1));
+  third={question:'Qual descrição corresponde ao conceito “'+String(next?.term||'')+'”?',
+   options:rotate,correct:2,feedback:'Nesta aula, “'+String(next?.term||'')+'” é definido assim: '+String(next?.desc||'')};
+ }
+ return [{question:base.question,options:base.options,correct:Number(base.correct),feedback:base.feedback},second,third];
+}
+function renderLacanThreeQuiz(l,qid){
+ const questions=lacanQuizQuestions(l),index=Math.min(2,Math.max(0,lacanQuizPhase)),q=questions[index];
+ const stored=quizData[qid]||{},answers=Array.isArray(stored.phases)?stored.phases:[],done=answers[index]?.checked;
+ const selected=done?answers[index].selected:selectedAnswer;
+ const count=answers.filter(x=>x?.checked).length;
+ const good=answers.reduce((n,a,i)=>n+(a?.checked&&a.selected===questions[i]?.correct?1:0),0);
+ const names=['ENTENDA A IDEIA','RECONHEÇA O CONCEITO','APLIQUE O QUE APRENDEU'];
+ const buttons=q.options.map((choice,i)=>'<button type="button" class="quiz-option '+(selected===i?'selected':'')+'" data-answer="'+i+'" aria-pressed="'+(selected===i)+'" '+(done?'disabled':'')+'><span class="option-letter">'+('ABC'[i])+'.</span><span>'+esc(choice)+'</span></button>').join('');
+ const explanation=done?'<div class="quiz-feedback '+(selected===q.correct?'':'bad')+'" role="status"><b>'+(selected===q.correct?'Boa leitura.':'Compare com a explicação.')+'</b><br>'+esc(q.feedback||'')+'</div>':'';
+ const prev=index>0?'<button type="button" class="btn" data-action="previousQuizPhase">← Anterior</button>':'';
+ const next=done?(index<2?'<button type="button" class="btn primary" data-action="nextQuizPhase">Próxima fase →</button>':'<button type="button" class="btn primary" data-action="finishQuiz">Concluir as 3 fases ✓</button>'):'<button type="button" class="btn primary" data-action="checkAnswer" '+(selected===null?'disabled':'')+'>Conferir resposta</button>';
+ const ended=stored.completed?'<p class="quiz3-summary" role="status">✓ Três fases respondidas · '+good+'/3 respostas corretas. Você pode revisar cada fase ou tentar novamente.</p><button type="button" class="btn" data-action="restartQuizPhases">↺ Refazer o quiz</button>':'';
+ return '<section class="lesson-step quiz3-shell" id="lacanQuiz3" aria-label="Quiz de tres fases"><div class="step-caption">VERIFICAÇÃO DE COMPREENSÃO · TRÊS FASES</div><h2>Você compreendeu?</h2><div class="quiz3-head"><strong>FASE '+(index+1)+' DE 3</strong><span>'+names[index]+'</span><small>'+count+'/3 respondidas</small></div><div class="quiz3-steps" aria-label="Progresso das tres fases">'+[0,1,2].map(i=>'<span class="'+(answers[i]?.checked?'done ': '')+(i===index?'current':'')+'"></span>').join('')+'</div><h3 class="quiz3-question">'+esc(q.question||'')+'</h3><div id="quizChoices">'+buttons+'</div><div id="feedbackArea">'+explanation+'</div><div class="quiz3-actions">'+prev+next+'</div>'+ended+'</section>';
+}
+function lacanQuizRefresh(){
+ const old=document.getElementById('lacanQuiz3'),item=loc(activeLesson);if(!old||!item)return;
+ const box=document.createElement('div');box.innerHTML=renderLacanThreeQuiz(item.l,doneId(activeLesson));
+ old.replaceWith(box.firstElementChild);
+}
+function lacanQuizSetPhase(n){
+ lacanQuizPhase=Math.max(0,Math.min(2,n));
+ const previous=quizData[doneId(activeLesson)]?.phases?.[lacanQuizPhase];
+ selectedAnswer=previous?.checked?previous.selected:null;
+ quizData[doneId(activeLesson)]=Object.assign({},quizData[doneId(activeLesson)],{phase:lacanQuizPhase});
+ save();lacanQuizRefresh();
+ document.getElementById('lacanQuiz3')?.scrollIntoView({block:'start',behavior:'auto'});
+}
+function lacanQuizCheck(){
+ if(selectedAnswer===null)return;
+ const ctx=loc(activeLesson);if(!ctx)return;
+ const key=doneId(activeLesson),past=quizData[key]||{},phases=Array.isArray(past.phases)?past.phases.slice(0,3):[];
+ phases[lacanQuizPhase]={selected:selectedAnswer,checked:true};
+ const completed=phases.filter(x=>x?.checked).length===3;
+ quizData[key]={...past,phases,phase:lacanQuizPhase,completed};
+ if(completed)progress[key]=true;
+ save();if(completed)refreshNav();lacanQuizRefresh();
+}
+
 function renderLesson(){let ctx=loc(activeLesson);if(!ctx)return renderHome();let {m,l}=ctx,all=allLessons(),idx=all.findIndex(x=>x.id===l.id),qid=doneId(l.id);let qu=l.quiz||{},pre=all[idx-1],next=all[idx+1],choices=qu.options||[],quizSaved=quizData[qid],feedback=quizSaved?.checked?`<div class="quiz-feedback ${quizSaved.selected===Number(qu.correct)?'':'bad'}"><b>${quizSaved.selected===Number(qu.correct)?'Resposta correta.':'Ainda não é essa.'}</b><br>${esc(qu.feedback||'Releia a explicação e tente novamente.')}</div>`:'';
 return `<article class="reader" style="--reader-font-scale:${ATELIER_FONT_LEVELS[atelierFontIndex]}"><div class="lesson-meta"><span class="eyebrow">${esc(m.title)}</span><span>·</span><span>AULA ${idx+1} DE ${all.length}</span><span>·</span><span>${Number(l.minutes||12)} MIN</span></div><h1 class="serif">${esc(l.title)}</h1><p class="subtitle">${esc(l.hook||'O que este tema nos convida a pensar?')}</p>${['seminarios-lacanianos','seminarios-kleinianos','seminarios-winnicottianos'].includes(activeCourse)?'<div class="at-lesson-nav"><span>PERGUNTA → TEORIA → EXPERIMENTO → EXERCÍCIO</span><button type="button" data-action="jumpLab">Explorar laboratório ↓</button></div>':''}<div class="lesson-tools"><span style="font-size:12px;color:var(--muted)">${isDone(l.id)?'✓ Aula concluída':'○ Aula em andamento'}</span><div class="reader-font-controls" role="group" aria-label="Ajustar tamanho da fonte da aula"><span class="reader-font-label">Texto</span><button type="button" class="reader-font-btn" data-font-step="-1" aria-label="Diminuir o tamanho da fonte" title="Diminuir fonte" ${atelierFontIndex===0?'disabled':''}>A−</button><output id="readerFontValue" aria-live="polite">${Math.round(ATELIER_FONT_LEVELS[atelierFontIndex]*100)}%</output><button type="button" class="reader-font-btn" data-font-step="1" aria-label="Aumentar o tamanho da fonte" title="Aumentar fonte" ${atelierFontIndex===ATELIER_FONT_LEVELS.length-1?'disabled':''}>A+</button><button type="button" class="reader-font-btn reader-font-reset" data-font-step="reset" aria-label="Restaurar tamanho da fonte">Padrão</button></div><div class="right-tools"><button class="btn sm ghost" data-editlesson="${esc(l.id)}">✎ Editar aula</button><button class="btn sm" data-action="toggleComplete">${isDone(l.id)?'Marcar como não estudada':'Marcar como estudada'}</button></div></div>
 ${l.id==='freud_a021'&&activeCourse==='formacao-freudiana'?'<div class="word-entry"><div><span>⌕ JOGO DE INVESTIGAÇÃO</span><strong>O Mistério das Palavras Perdidas</strong><p>Abra três arquivos, descubra pistas, reorganize palavras e compare explicações. Até 300 pontos.</p></div><button type="button" class="btn primary" data-action="jumpWordGame">Iniciar investigação ↓</button></div>':''}
@@ -702,7 +787,7 @@ ${renderWinnicottLab(l)}
 <section class="lesson-step example"><div class="step-caption"><span class="step-num">04</span> COLOCANDO EM CONTEXTO</div><h2>${esc(l.example?.title||'Um exemplo para pensar')}</h2>${prose(l.example?.body)}</section>
 ${l.lab?`<section class="lesson-step"><div class="step-caption"><span class="step-num">05</span> LABORATÓRIO GUIADO</div><h2>Explore uma relação</h2><p>Selecione as partes do modelo e acompanhe o que muda na explicação. A visualização é didática, não um desenho anatômico ou um diagnóstico.</p><div id="labBox">${renderLab(l.lab)}</div></section>`:''}
 <section class="lesson-step"><div class="step-caption"><span class="step-num">${l.lab?'06':'05'}</span> VOCABULÁRIO</div><h2>Palavras para guardar</h2><p>Toque em cada conceito para revelar seu significado. Tente explicá-lo antes de abrir a resposta.</p><div class="flash-grid">${(l.terms||[]).map((x,i)=>`<button class="flash" data-flash="${i}" aria-expanded="false"><b>${esc(x.term)}</b><span>Toque para revelar ↓</span><span class="definition hidden">${esc(x.desc)}</span></button>`).join('')}</div></section>
-${qu.question && choices.length===3 && choices.every(x=>String(x||'').trim())?`<section class="lesson-step"><div class="step-caption"><span class="step-num">${l.lab?'07':'06'}</span> VERIFICAÇÃO DE COMPREENSÃO</div><h2>Você compreendeu?</h2><p style="color:var(--text)">${esc(qu.question)}</p><div id="quizChoices">${choices.map((t,i)=>`<button class="quiz-option ${selectedAnswer===i?'selected':''}" data-answer="${i}" aria-pressed="${selectedAnswer===i}"><span class="option-letter">${'ABC'[i]||i+1}.</span><span>${esc(t)}</span></button>`).join('')}</div><button class="btn primary" data-action="checkAnswer" ${selectedAnswer===null?'disabled style="opacity:.5;cursor:not-allowed"':''}>Verificar resposta</button><div id="feedbackArea">${feedback}</div></section>`:`<section class="lesson-step"><div class="step-caption">EXERCÍCIO</div><h2>Esta aula ainda não tem exercício</h2><p>Quando quiser, edite esta aula e acrescente uma pergunta com três alternativas e a explicação da resposta. Por enquanto, você pode concluir a leitura normalmente.</p><button class="btn" data-editlesson="${esc(l.id)}">＋ Criar exercício</button></section>`}
+${activeCourse==='seminarios-lacanianos'?renderLacanThreeQuiz(l,qid):qu.question && choices.length===3 && choices.every(x=>String(x||'').trim())?`<section class="lesson-step"><div class="step-caption"><span class="step-num">${l.lab?'07':'06'}</span> VERIFICAÇÃO DE COMPREENSÃO</div><h2>Você compreendeu?</h2><p style="color:var(--text)">${esc(qu.question)}</p><div id="quizChoices">${choices.map((t,i)=>`<button class="quiz-option ${selectedAnswer===i?'selected':''}" data-answer="${i}" aria-pressed="${selectedAnswer===i}"><span class="option-letter">${'ABC'[i]||i+1}.</span><span>${esc(t)}</span></button>`).join('')}</div><button class="btn primary" data-action="checkAnswer" ${selectedAnswer===null?'disabled style="opacity:.5;cursor:not-allowed"':''}>Verificar resposta</button><div id="feedbackArea">${feedback}</div></section>`:`<section class="lesson-step"><div class="step-caption">EXERCÍCIO</div><h2>Esta aula ainda não tem exercício</h2><p>Quando quiser, edite esta aula e acrescente uma pergunta com três alternativas e a explicação da resposta. Por enquanto, você pode concluir a leitura normalmente.</p><button class="btn" data-editlesson="${esc(l.id)}">＋ Criar exercício</button></section>`}
 <section class="lesson-step"><div class="step-caption"><span class="step-num">${l.lab?'08':'07'}</span> SEU CADERNO</div><h2>O que ficou da aula?</h2><p>Escreva com suas palavras a ideia principal, uma dúvida ou uma conexão com outro conceito.</p><textarea class="notes-field" id="noteField" placeholder="Minhas anotações sobre esta aula…">${esc(notes[qid]||'')}</textarea><div class="notes-hint" id="noteStatus">Salvo automaticamente neste navegador.</div></section>
 <section class="lesson-step"><div class="step-caption">REFERÊNCIAS · LEITURA COMPLEMENTAR</div><h2>Para aprofundar</h2><ul class="ref-list">${(l.refs||[]).map(x=>`<li>${esc(x).replace(/https?:\/\/[^\s<]+/g,u=>`<a href="${u}" target="_blank" rel="noopener noreferrer" style="color:var(--accent);overflow-wrap:anywhere">${u}</a>`)}</li>`).join('')}</ul><p style="font-size:12px">As referências indicam obras e anos de publicação; a paginação muda conforme a edição. Exemplos didáticos não substituem a formulação dos autores.</p></section>
 <div class="complete-strip"><div><strong>${isDone(l.id)?'Aula marcada como concluída.':'Conclua quando sentir que compreendeu.'}</strong><span>Você pode voltar aqui quantas vezes quiser.</span></div><button class="btn ${isDone(l.id)?'':'primary'}" data-action="toggleComplete">${isDone(l.id)?'✓ Concluída':'✓ Concluir esta aula'}</button></div>
@@ -789,7 +874,13 @@ if(b.closest("#atelierLab, #lacanLab") && atHandle(b))return; if(b.closest("#lan
  if(b.dataset.fmcontrol!==undefined){fmControl(b.dataset.fmcontrol);return}
 const action=b.dataset.action; if(action==='openWordGame'){openWordGame();return} if(action==='jumpWordGame'){const target=document.getElementById('wordMystery');if(target)target.scrollIntoView({behavior:matchMedia('(prefers-reduced-motion: reduce)').matches?'auto':'smooth',block:'start'});return} if(action==='openDreamGame'){openDreamGame();return} if(action==='jumpDream'){const target=document.getElementById('dreamForge');if(target)target.scrollIntoView({behavior:matchMedia('(prefers-reduced-motion: reduce)').matches?'auto':'smooth',block:'start'});return} if(action==='openDefesaGame'){openDefesaGame();return} if(action==='jumpLab'){let lab=document.querySelector('#winnicottLab,#lacExpansionLab,#kleinLab,#atelierLab,#languageLab,#lacanLab');if(lab)lab.scrollIntoView({behavior:matchMedia('(prefers-reduced-motion: reduce)').matches?'auto':'smooth',block:'start'});return}
 if(action==='toggleComplete'){progress[doneId(activeLesson)]=!isDone(activeLesson);save();render();return}
-if(action==='checkAnswer'){if(selectedAnswer===null)return;const item=loc(activeLesson).l;quizData[doneId(activeLesson)]={selected:selectedAnswer,checked:true};if(selectedAnswer===Number(item.quiz?.correct))progress[doneId(activeLesson)]=true;save();refreshNav();if(isDone(activeLesson)){const foot=$('.complete-strip .btn');if(foot){foot.textContent='✓ Concluída';foot.classList.remove('primary')}const lab=$('.lesson-tools > span');if(lab)lab.textContent='✓ Aula concluída';}$('#feedbackArea').innerHTML=`<div class="quiz-feedback ${selectedAnswer===Number(item.quiz?.correct)?'':'bad'}"><b>${selectedAnswer===Number(item.quiz?.correct)?'Resposta correta. Aula marcada como concluída.':'Ainda não é essa. Você pode tentar novamente.'}</b><br>${esc(item.quiz?.feedback||'')}</div>`;return}
+if(action==='checkAnswer'){if(activeCourse==='seminarios-lacanianos'){lacanQuizCheck();return;}if(selectedAnswer===null)return;const item=loc(activeLesson).l;quizData[doneId(activeLesson)]={selected:selectedAnswer,checked:true};if(selectedAnswer===Number(item.quiz?.correct))progress[doneId(activeLesson)]=true;save();refreshNav();if(isDone(activeLesson)){const foot=$('.complete-strip .btn');if(foot){foot.textContent='✓ Concluída';foot.classList.remove('primary')}const lab=$('.lesson-tools > span');if(lab)lab.textContent='✓ Aula concluída';}$('#feedbackArea').innerHTML=`<div class="quiz-feedback ${selectedAnswer===Number(item.quiz?.correct)?'':'bad'}"><b>${selectedAnswer===Number(item.quiz?.correct)?'Resposta correta. Aula marcada como concluída.':'Ainda não é essa. Você pode tentar novamente.'}</b><br>${esc(item.quiz?.feedback||'')}</div>`;return}
+if(activeCourse==='seminarios-lacanianos'){
+ if(action==='nextQuizPhase'){lacanQuizSetPhase(lacanQuizPhase+1);return}
+ if(action==='previousQuizPhase'){lacanQuizSetPhase(lacanQuizPhase-1);return}
+ if(action==='finishQuiz'){lacanQuizCheck();return}
+ if(action==='restartQuizPhases'){delete quizData[doneId(activeLesson)];lacanQuizPhase=0;selectedAnswer=null;save();lacanQuizRefresh();return}
+}
 if(action==='closeModal'){closeModal();return}if(action==='newCourse'){editCourse();return}if(action==='newModule'){editModule();return}if(action==='newLesson'){if(!course().modules.length){toast('Crie primeiro um módulo.');editModule();return}editLesson();return}if(action==='manage'){manageDialog();return}if(action==='backup'){backupDialog();return}if(action==='export'){exportBackup();return}if(action==='import'){$('#importFile')?.click();return}if(action==='deleteEntity'){deleteEntity();return}if(action==='moveUp'){moveEntity(-1);return}if(action==='moveDown'){moveEntity(1);return}
 if(b.id==='mobileOpen'){openMobile();return}if(b.id==='manageBtn'){closeMobile();manageDialog();return}if(b.id==='backupBtn'){closeMobile();backupDialog();return}if(b.id==='topManage'){if(!course().modules.length)editModule();else editLesson();return}if(b.id==='courseEditBtn'){editCourse(activeCourse);return}if(b.id==='addModuleBtn'){editModule();return}
 });
