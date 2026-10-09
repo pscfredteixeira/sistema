@@ -388,3 +388,45 @@ body{background:var(--bg)}
 
 /* Atelier mobile: lab typography */
 @media(max-width:760px){.reader .at-options button strong,.reader .lc-choices button span,.reader .ll-selections button strong{font-size:16px!important;line-height:1.45!important}}
+
+/* Atelier Lacan: mobile-first typography + staged reading quiz */
+.quiz3-head{display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin:18px 0 12px;color:var(--text);font-size:13px}
+.quiz3-head strong{color:var(--orange)}.quiz3-head small{margin-left:auto;color:var(--muted)}
+.quiz3-steps{display:flex;gap:8px;margin:0 0 20px}
+.quiz3-steps span{height:7px;flex:1;border-radius:20px;background:var(--line)}
+.quiz3-steps .current{background:var(--orange)}.quiz3-steps .done{background:var(--sage)}
+.quiz3-question{font:normal 23px/1.4 Georgia,serif;color:var(--text);margin:8px 0 17px}
+.quiz3-actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:16px}
+.quiz3-actions>.btn{min-height:46px}
+.quiz3-summary{font-size:14px;line-height:1.65;padding:14px;border:1px solid var(--sage);border-radius:12px;background:var(--surface2)}
+@media(max-width:760px){
+ .reader #languageLab .ll-selections,.reader #languageLab .ll-selections.ll-two,
+ .reader #atelierLab .at-options,.reader #atelierLab .at-options:has(button:nth-child(4)),
+ .reader #lacanLab .lc-choices,.reader #lacanLab .lc-choices:has(button:nth-child(4)){grid-template-columns:1fr}
+ .reader #languageLab .ll-selections button,.reader #atelierLab .at-options button,
+ .reader #lacanLab .lc-choices button{min-height:56px;padding:14px;gap:8px}
+ .reader #languageLab .ll-selections button strong,.reader #atelierLab .at-options button strong,
+ .reader #lacanLab .lc-choices button span{font-size:calc(16px * var(--reader-font-scale))!important;line-height:1.5}
+ .reader #languageLab .ll-context,.reader #languageLab .ll-result p,.reader #languageLab .ll-instruction,
+ .reader #atelierLab .at-findings p,.reader #atelierLab .at-guard,.reader #atelierLab .at-mobile-flow b,
+ .reader #lacanLab .lc-detail p,.reader #lacanLab .lc-warning p,
+ .reader #lacExpansionLab .lx-reading p,.reader #lacExpansionLab .lx-special-answer,
+ .reader #lacExpansionLab .lx-actions button,.reader #lacExpansionLab .lx-stage-tabs button,
+ .reader #lacExpansionLab .lx-compare-row span{
+   font-size:calc(15px * var(--reader-font-scale))!important;line-height:1.65!important
+ }
+ .reader #atelierLab .at-mobile-flow>div,.reader #lacanLab .lc-mobile-graphic>div{min-height:56px;padding:13px}
+ .reader #atelierLab .at-mobile-flow b,.reader #lacanLab .lc-mobile-graphic strong{font-size:calc(16px * var(--reader-font-scale))!important;overflow-wrap:anywhere}
+ .reader #lacExpansionLab .lx-actions{display:grid;grid-template-columns:repeat(2,minmax(0,1fr))}
+ .reader #lacExpansionLab .lx-actions button{min-height:52px;white-space:normal;overflow-wrap:anywhere;padding:12px 9px}
+ .reader #lacExpansionLab .lx-visual{overflow-x:auto;-webkit-overflow-scrolling:touch}
+ .reader #lacExpansionLab .lx-visual svg{min-width:480px;width:100%;max-width:none;height:auto}
+ .reader #lacExpansionLab .lx-visual:after{content:"Deslize o desenho para os lados ↔";display:block;text-align:center;color:var(--muted);font-size:12px;padding:8px}
+ .reader #lacanLab .lc-graphic svg{min-width:0}
+ .reader #lacanLab .lc-disc-slot .lc-slot-symbol{font-size:24px}
+ .reader .quiz3-shell .quiz-option{font-size:calc(16px * var(--reader-font-scale))!important;line-height:1.6;min-height:58px}
+ .reader .quiz3-question{font-size:calc(23px * var(--reader-font-scale))!important}
+ .quiz3-actions{display:grid;grid-template-columns:1fr}
+ .quiz3-actions .btn{width:100%;min-height:49px}
+}
+@media(max-width:380px){.reader #lacExpansionLab .lx-actions{grid-template-columns:1fr}}
