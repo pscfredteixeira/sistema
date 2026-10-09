@@ -780,6 +780,7 @@ ${activeCourse==='seminarios-lacanianos' && l.atelierBridge?renderLacanBridge(l)
  ${hasNeuroMotion(l)&&l.id!=='freud_a003'?renderND(l.id):''}
  ${hasNeuroMotion(l)&&(l.blocks||[]).length>6?`<section class="lesson-step"><div class="step-caption">↗ DEPOIS DA EXPERIÊNCIA</div><h2>Agora aprofunde o que você explorou</h2><p>O laboratório serve para comparar hipóteses. Continue a leitura para entender nuances, objeções e limites que nenhuma seta consegue mostrar.</p>${l.blocks.slice(6).map(b=>`<div class="theory-block"><h3>${esc(b.title)}</h3>${prose(b.body)}</div>`).join('')}</section>`:''}
  ${hasFreudMotion(l)&&(l.blocks||[]).length>6?`<section class="lesson-step"><div class="step-caption">↗ VOLTANDO À TEORIA</div><h2>Agora aprofunde o que observou</h2><p>Depois de explorar a animação, continue a leitura. Volte ao laboratório quando quiser: cada pergunta ajuda a interpretar melhor a história.</p>${l.blocks.slice(6).map(b=>`<div class="theory-block"><h3>${esc(b.title)}</h3>${prose(b.body)}</div>`).join('')}</section>`:''}
+${l.id==='lac_a004'&&activeCourse==='seminarios-lacanianos'&&window.AtelierPalavraPuxaPalavra?window.AtelierPalavraPuxaPalavra.render():''}
 ${renderLacanExperience(l.id)}
 ${renderLacanExpansion(l)}
 ${renderKleinExperience(l)}
@@ -872,7 +873,7 @@ if(b.closest("#atelierLab, #lacanLab") && atHandle(b))return; if(b.closest("#lan
  if(b.dataset.fmanswer!==undefined){fmChooseAnswer(Number(b.dataset.fmanswer));return}
  if(b.dataset.fmtime!==undefined){fmStop();fmUpdateTime(Number(b.dataset.fmtime));fmSyncPlay();return}
  if(b.dataset.fmcontrol!==undefined){fmControl(b.dataset.fmcontrol);return}
-const action=b.dataset.action; if(action==='openWordGame'){openWordGame();return} if(action==='jumpWordGame'){const target=document.getElementById('wordMystery');if(target)target.scrollIntoView({behavior:matchMedia('(prefers-reduced-motion: reduce)').matches?'auto':'smooth',block:'start'});return} if(action==='openDreamGame'){openDreamGame();return} if(action==='jumpDream'){const target=document.getElementById('dreamForge');if(target)target.scrollIntoView({behavior:matchMedia('(prefers-reduced-motion: reduce)').matches?'auto':'smooth',block:'start'});return} if(action==='openDefesaGame'){openDefesaGame();return} if(action==='jumpLab'){let lab=document.querySelector('#winnicottLab,#lacExpansionLab,#kleinLab,#atelierLab,#languageLab,#lacanLab');if(lab)lab.scrollIntoView({behavior:matchMedia('(prefers-reduced-motion: reduce)').matches?'auto':'smooth',block:'start'});return}
+const action=b.dataset.action; if(action==='openPalavraGame'){openPalavraGame();return} if(action==='openWordGame'){openWordGame();return} if(action==='jumpWordGame'){const target=document.getElementById('wordMystery');if(target)target.scrollIntoView({behavior:matchMedia('(prefers-reduced-motion: reduce)').matches?'auto':'smooth',block:'start'});return} if(action==='openDreamGame'){openDreamGame();return} if(action==='jumpDream'){const target=document.getElementById('dreamForge');if(target)target.scrollIntoView({behavior:matchMedia('(prefers-reduced-motion: reduce)').matches?'auto':'smooth',block:'start'});return} if(action==='openDefesaGame'){openDefesaGame();return} if(action==='jumpLab'){let lab=document.querySelector('#winnicottLab,#lacExpansionLab,#kleinLab,#atelierLab,#languageLab,#lacanLab');if(lab)lab.scrollIntoView({behavior:matchMedia('(prefers-reduced-motion: reduce)').matches?'auto':'smooth',block:'start'});return}
 if(action==='toggleComplete'){progress[doneId(activeLesson)]=!isDone(activeLesson);save();render();return}
 if(action==='checkAnswer'){if(activeCourse==='seminarios-lacanianos'){lacanQuizCheck();return;}if(selectedAnswer===null)return;const item=loc(activeLesson).l;quizData[doneId(activeLesson)]={selected:selectedAnswer,checked:true};if(selectedAnswer===Number(item.quiz?.correct))progress[doneId(activeLesson)]=true;save();refreshNav();if(isDone(activeLesson)){const foot=$('.complete-strip .btn');if(foot){foot.textContent='✓ Concluída';foot.classList.remove('primary')}const lab=$('.lesson-tools > span');if(lab)lab.textContent='✓ Aula concluída';}$('#feedbackArea').innerHTML=`<div class="quiz-feedback ${selectedAnswer===Number(item.quiz?.correct)?'':'bad'}"><b>${selectedAnswer===Number(item.quiz?.correct)?'Resposta correta. Aula marcada como concluída.':'Ainda não é essa. Você pode tentar novamente.'}</b><br>${esc(item.quiz?.feedback||'')}</div>`;return}
 if(activeCourse==='seminarios-lacanianos'){
@@ -906,6 +907,15 @@ function openDreamGame(){
  const target=document.getElementById('dreamForge');
  if(target)target.scrollIntoView({behavior:matchMedia('(prefers-reduced-motion: reduce)').matches?'auto':'smooth',block:'start'});
 }
+function openPalavraGame(){
+ activeCourse='seminarios-lacanianos';
+ $('#sidebarSearch').value='';
+ goLesson('lac_a004');
+ save();
+ if(location.hash!=='#palavra-puxa-palavra')history.replaceState(null,'','#palavra-puxa-palavra');
+ const target=document.getElementById('palavraPuxaPalavra');
+ if(target)target.scrollIntoView({behavior:matchMedia('(prefers-reduced-motion: reduce)').matches?'auto':'smooth',block:'start'});
+}
 function openWordGame(){
  activeCourse='formacao-freudiana';
  $('#sidebarSearch').value='';
@@ -918,6 +928,7 @@ function openWordGame(){
 render();
 if(location.hash==='#jogo-defesa') openDefesaGame();
 if(location.hash==='#misterio-das-palavras')openWordGame();
+if(location.hash==='#palavra-puxa-palavra')openPalavraGame();
 if(location.hash==='#fabrica-dos-sonhos') openDreamGame();
 // Persiste a inclusão de cursos novos após a migração aditiva.
 try{localStorage.setItem(KEYS.courses,JSON.stringify(courses))}catch(e){}
