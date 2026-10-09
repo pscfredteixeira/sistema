@@ -165,3 +165,12 @@
 }
 @media(hover:hover) and (pointer:fine){.wm-game button:not(:disabled):hover{filter:brightness(1.08);border-color:#e2bc9b}}
 @media(prefers-reduced-motion:reduce){.wm-game *, .wm-game *::before,.wm-game *::after{animation:none!important;transition:none!important;scroll-behavior:auto!important}}
+
+/* Atalho ao caso especial, com leitura e acesso por toque */
+.word-entry{display:flex;align-items:center;justify-content:space-between;gap:15px;flex-wrap:wrap;border:1px solid #af918b;padding:20px 22px;margin:15px 0 25px;background:linear-gradient(125deg,rgba(144,117,131,.18),rgba(59,57,76,.1));border-radius:16px}
+.word-entry>div{min-width:0;flex:1 1 220px}
+.word-entry>div>span{font-size:10px;letter-spacing:.14em;color:#e4c69b;font-weight:800}
+.word-entry strong{display:block;font-family:Georgia,serif;font-size:26px;font-weight:400;margin:7px 0}
+.word-entry p{font-size:13px;color:var(--muted);line-height:1.5;margin:0}
+.word-entry button{min-height:44px}
+@media(max-width:480px){.word-entry{padding:16px}.word-entry button{width:100%}}
