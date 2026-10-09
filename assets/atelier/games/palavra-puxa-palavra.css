@@ -103,3 +103,12 @@
 }
 @media(max-width:350px){.pp-brand strong{font-size:16px}.pp-brand small{font-size:8px}.pp-reset{padding:8px}.pp-token b{font-size:14px}.pp-retro-token{font-size:14px}}
 @media(prefers-reduced-motion:reduce){.pp-game *{animation:none!important;transition:none!important}}
+
+/* Em telefones estreitos, cadeia principal vira trilha vertical: nenhum cartao encolhe. */
+@media(max-width:520px){
+ .pp-chain:not(.pp-compact){flex-direction:column;align-items:stretch;gap:0}
+ .pp-chain:not(.pp-compact) .pp-token{position:relative;min-width:0;width:100%;align-items:center}
+ .pp-chain:not(.pp-compact) .pp-token:not(:first-child){padding-top:15px}
+ .pp-chain:not(.pp-compact) .pp-token:not(:first-child)::before{position:absolute;left:2.5px;top:0;width:2px;height:14px;flex:none;background:#c8acc6}
+ .pp-chain:not(.pp-compact) .pp-token b{flex:1;font-size:17px!important}
+}
