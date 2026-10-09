@@ -687,7 +687,8 @@ return `<article class="reader" style="--reader-font-scale:${ATELIER_FONT_LEVELS
 ${activeCourse==='seminarios-lacanianos' && l.atelierBridge?renderLacanBridge(l):''}<section class="lesson-step"><div class="step-caption"><span class="step-num">02</span> PRIMEIRO CONTATO</div><h2>Entenda a ideia central</h2>${prose(l.lead)}</section>
 <section class="lesson-step"><div class="step-caption"><span class="step-num">03</span> TEORIA EM DETALHES</div><h2>Construindo o conceito</h2>${((hasFreudMotion(l)||hasNeuroMotion(l))?(l.blocks||[]).slice(0,6):(l.blocks||[])).map(b=>`<div class="theory-block"><h3>${esc(b.title)}</h3>${prose(b.body)}</div>`).join('')}</section>
  ${hasFreudMotion(l)?renderFreudMotion(l.id):''}
- ${hasNeuroMotion(l)?renderND(l.id):''}
+ ${l.id==='freud_a003'&&activeCourse==='formacao-freudiana'&&window.AtelierDefesaGame?window.AtelierDefesaGame.render():''}
+ ${hasNeuroMotion(l)&&l.id!=='freud_a003'?renderND(l.id):''}
  ${hasNeuroMotion(l)&&(l.blocks||[]).length>6?`<section class="lesson-step"><div class="step-caption">↗ DEPOIS DA EXPERIÊNCIA</div><h2>Agora aprofunde o que você explorou</h2><p>O laboratório serve para comparar hipóteses. Continue a leitura para entender nuances, objeções e limites que nenhuma seta consegue mostrar.</p>${l.blocks.slice(6).map(b=>`<div class="theory-block"><h3>${esc(b.title)}</h3>${prose(b.body)}</div>`).join('')}</section>`:''}
  ${hasFreudMotion(l)&&(l.blocks||[]).length>6?`<section class="lesson-step"><div class="step-caption">↗ VOLTANDO À TEORIA</div><h2>Agora aprofunde o que observou</h2><p>Depois de explorar a animação, continue a leitura. Volte ao laboratório quando quiser: cada pergunta ajuda a interpretar melhor a história.</p>${l.blocks.slice(6).map(b=>`<div class="theory-block"><h3>${esc(b.title)}</h3>${prose(b.body)}</div>`).join('')}</section>`:''}
 ${renderLacanExperience(l.id)}
