@@ -350,6 +350,47 @@ body{background:var(--bg)}
 .lac-intro-guide .lac-goal{border-top:1px solid var(--line-soft);padding-top:13px;color:var(--muted);font-size:13px;line-height:1.7;margin-top:13px}
 .lac-intro-guide .lac-goal strong{color:var(--text)}
 @media(max-width:650px){.lac-intro-guide{padding:18px 15px}.lac-intro-guide p{font-size:14px}}
+
+/* Atelier · controles de acessibilidade de leitura, sem alterar os menus */
+.reader{--reader-font-scale:1}
+.reader .lesson-step p,.reader .lesson-step li,.reader .guide,
+.reader .lac-intro-guide p,.reader .lac-prompt,.reader .lac-reveal,.reader .lac-goal,
+.reader .lab-description p,.reader .lab-alert,.reader .lx-reading,.reader .lx-reading p,
+.reader .lx-special-answer,.reader .lx-special>p,.reader .lx-note,
+.reader .kl-panel p,.reader .kl-boundary,.reader .kl-compare p,
+.reader .at-findings p,.reader .at-guard,.reader .at-feedback,.reader .at-bottom-note,
+.reader .wl-panel p,.reader .wl-result p,.reader .wl-note,
+.reader .quiz-option,.reader .quiz-feedback,.reader .notes-field,
+.reader .flash .definition,.reader .flash span,.reader .ref-list li{
+  font-size:calc(15px * var(--reader-font-scale))!important;
+  line-height:1.78;
+}
+.reader .theory-block h3,.reader .lesson-step h3,.reader .lac-intro-guide h3{
+  font-size:calc(18px * var(--reader-font-scale))!important;
+  line-height:1.42;
+}
+.reader .lesson-step h2,.reader .lac-intro-guide h2{
+  font-size:calc(29px * var(--reader-font-scale))!important;
+  line-height:1.32;
+}
+.reader h1{font-size:clamp(36px,calc(48px * var(--reader-font-scale)),78px)!important;overflow-wrap:break-word}
+.reader .subtitle{font-size:calc(25px * var(--reader-font-scale))!important;line-height:1.45}
+.reader .flash b{font-size:calc(20px * var(--reader-font-scale))!important}
+.reader-font-controls{display:flex;align-items:center;gap:6px;flex-wrap:wrap;padding:4px 7px;border:1px solid var(--line);background:var(--surface2);border-radius:11px}
+.reader-font-label{font-size:12px;color:var(--muted);margin:0 5px 0 3px}
+.reader-font-btn{min-width:37px;min-height:37px;padding:6px 9px;border:1px solid var(--line);border-radius:8px;background:var(--surface);color:var(--text);font-size:14px;font-weight:700}
+.reader-font-btn:hover:not(:disabled){border-color:var(--orange);color:var(--orange);background:var(--surface3)}
+.reader-font-btn:disabled{opacity:.4;cursor:not-allowed}
+.reader-font-controls output{font-size:12px;color:var(--text);font-variant-numeric:tabular-nums;min-width:37px;text-align:center}
+.reader-font-reset{font-size:12px;font-weight:550}
+@media(max-width:760px){
+ .reader h1{font-size:clamp(32px,calc(37px * var(--reader-font-scale)),58px)!important}
+ .reader .lesson-step h2,.reader .lac-intro-guide h2{font-size:calc(26px * var(--reader-font-scale))!important}
+ .reader .subtitle{font-size:calc(22px * var(--reader-font-scale))!important}
+ .lesson-tools .right-tools{display:flex;flex-wrap:wrap}
+ .reader-font-controls{order:2;width:100%;justify-content:center}
+ .lesson-tools .right-tools{order:3;width:100%;justify-content:flex-start}
+}
 </style>
 </head>
 <body>
@@ -1046,8 +1087,24 @@ function renderLacanBridge(l){
  const b=l.atelierBridge;if(!b)return '';
  return `<section class="lac-intro-guide" aria-label="Introdução acessível à aula"><div class="step-caption">COMECE AQUI · ANTES DOS TERMOS TÉCNICOS</div><h2>Uma situação para pensar</h2><p>${esc(b.scene)}</p><div class="lac-prompt"><strong>Antes de ler a explicação:</strong> o que essa situação faz você perguntar?</div><details><summary>Revelar a ligação com a teoria</summary><div class="lac-reveal"><p>${esc(b.insight)}</p><p><b>Um limite importante:</b> ${esc(b.limit)}</p></div></details><div class="lac-goal"><strong>Ao final desta aula, você deverá conseguir:</strong> ${esc(b.goal)}.</div></section>`;
 }
+// Preferência local de acessibilidade, independente de cursos e backups.
+const ATELIER_FONT_LEVELS=[.85,1,1.15,1.3,1.45,1.6];
+let atelierFontIndex=1;
+try {const stored=Number(localStorage.getItem('atelier-font-index'));
+ if(Number.isInteger(stored)&&stored>=0&&stored<ATELIER_FONT_LEVELS.length)atelierFontIndex=stored;
+} catch(e){}
+function updateAtelierFont(next){
+ atelierFontIndex=Math.max(0,Math.min(ATELIER_FONT_LEVELS.length-1,Number(next)||0));
+ try{localStorage.setItem('atelier-font-index',String(atelierFontIndex))}catch(e){}
+ const reader=document.querySelector('.reader'); if(!reader)return;
+ reader.style.setProperty('--reader-font-scale',String(ATELIER_FONT_LEVELS[atelierFontIndex]));
+ const value=reader.querySelector('#readerFontValue');if(value)value.textContent=Math.round(ATELIER_FONT_LEVELS[atelierFontIndex]*100)+'%';
+ const less=reader.querySelector('[data-font-step="-1"]'),more=reader.querySelector('[data-font-step="1"]');
+ if(less)less.disabled=atelierFontIndex===0;
+ if(more)more.disabled=atelierFontIndex===ATELIER_FONT_LEVELS.length-1;
+}
 function renderLesson(){let ctx=loc(activeLesson);if(!ctx)return renderHome();let {m,l}=ctx,all=allLessons(),idx=all.findIndex(x=>x.id===l.id),qid=doneId(l.id);let qu=l.quiz||{},pre=all[idx-1],next=all[idx+1],choices=qu.options||[],quizSaved=quizData[qid],feedback=quizSaved?.checked?`<div class="quiz-feedback ${quizSaved.selected===Number(qu.correct)?'':'bad'}"><b>${quizSaved.selected===Number(qu.correct)?'Resposta correta.':'Ainda não é essa.'}</b><br>${esc(qu.feedback||'Releia a explicação e tente novamente.')}</div>`:'';
-return `<article class="reader"><div class="lesson-meta"><span class="eyebrow">${esc(m.title)}</span><span>·</span><span>AULA ${idx+1} DE ${all.length}</span><span>·</span><span>${Number(l.minutes||12)} MIN</span></div><h1 class="serif">${esc(l.title)}</h1><p class="subtitle">${esc(l.hook||'O que este tema nos convida a pensar?')}</p>${['seminarios-lacanianos','seminarios-kleinianos','seminarios-winnicottianos'].includes(activeCourse)?'<div class="at-lesson-nav"><span>PERGUNTA → TEORIA → EXPERIMENTO → EXERCÍCIO</span><button type="button" data-action="jumpLab">Explorar laboratório ↓</button></div>':''}<div class="lesson-tools"><span style="font-size:12px;color:var(--muted)">${isDone(l.id)?'✓ Aula concluída':'○ Aula em andamento'}</span><div class="right-tools"><button class="btn sm ghost" data-editlesson="${esc(l.id)}">✎ Editar aula</button><button class="btn sm" data-action="toggleComplete">${isDone(l.id)?'Marcar como não estudada':'Marcar como estudada'}</button></div></div>
+return `<article class="reader" style="--reader-font-scale:${ATELIER_FONT_LEVELS[atelierFontIndex]}"><div class="lesson-meta"><span class="eyebrow">${esc(m.title)}</span><span>·</span><span>AULA ${idx+1} DE ${all.length}</span><span>·</span><span>${Number(l.minutes||12)} MIN</span></div><h1 class="serif">${esc(l.title)}</h1><p class="subtitle">${esc(l.hook||'O que este tema nos convida a pensar?')}</p>${['seminarios-lacanianos','seminarios-kleinianos','seminarios-winnicottianos'].includes(activeCourse)?'<div class="at-lesson-nav"><span>PERGUNTA → TEORIA → EXPERIMENTO → EXERCÍCIO</span><button type="button" data-action="jumpLab">Explorar laboratório ↓</button></div>':''}<div class="lesson-tools"><span style="font-size:12px;color:var(--muted)">${isDone(l.id)?'✓ Aula concluída':'○ Aula em andamento'}</span><div class="reader-font-controls" role="group" aria-label="Ajustar tamanho da fonte da aula"><span class="reader-font-label">Texto</span><button type="button" class="reader-font-btn" data-font-step="-1" aria-label="Diminuir o tamanho da fonte" title="Diminuir fonte" ${atelierFontIndex===0?'disabled':''}>A−</button><output id="readerFontValue" aria-live="polite">${Math.round(ATELIER_FONT_LEVELS[atelierFontIndex]*100)}%</output><button type="button" class="reader-font-btn" data-font-step="1" aria-label="Aumentar o tamanho da fonte" title="Aumentar fonte" ${atelierFontIndex===ATELIER_FONT_LEVELS.length-1?'disabled':''}>A+</button><button type="button" class="reader-font-btn reader-font-reset" data-font-step="reset" aria-label="Restaurar tamanho da fonte">Padrão</button></div><div class="right-tools"><button class="btn sm ghost" data-editlesson="${esc(l.id)}">✎ Editar aula</button><button class="btn sm" data-action="toggleComplete">${isDone(l.id)?'Marcar como não estudada':'Marcar como estudada'}</button></div></div>
 <section class="lesson-step question-opening"><div class="step-caption"><span class="step-num">01</span> ANTES DE COMEÇAR</div><h2>${esc(l.hook||'O que você já sabe sobre isso?')}</h2><div class="guide"><b>↗</b><span>Não procure uma resposta perfeita agora. Volte a esta pergunta depois da aula e observe se sua compreensão mudou.</span></div></section>
 ${activeCourse==='seminarios-lacanianos' && l.atelierBridge?renderLacanBridge(l):''}<section class="lesson-step"><div class="step-caption"><span class="step-num">02</span> PRIMEIRO CONTATO</div><h2>Entenda a ideia central</h2>${prose(l.lead)}</section>
 <section class="lesson-step"><div class="step-caption"><span class="step-num">03</span> TEORIA EM DETALHES</div><h2>Construindo o conceito</h2>${((hasFreudMotion(l)||hasNeuroMotion(l))?(l.blocks||[]).slice(0,6):(l.blocks||[])).map(b=>`<div class="theory-block"><h3>${esc(b.title)}</h3>${prose(b.body)}</div>`).join('')}</section>
@@ -1118,6 +1175,7 @@ function closeMobile(){$('#sidebar').classList.remove('mobile-visible');$('#shad
 function openMobile(){$('#sidebar').classList.add('mobile-visible');$('#shade').classList.add('visible')}
 // All app interactions, including new editor buttons, are delegated.
 document.addEventListener('click',e=>{const b=e.target.closest('button');if(!b)return;
+if(b.dataset.fontStep!==undefined){updateAtelierFont(b.dataset.fontStep==='reset'?1:atelierFontIndex+Number(b.dataset.fontStep));return;}
 if(b.dataset.kleinstage!==undefined){
  kleinStage=Math.min(2,Math.max(0,Number(b.dataset.kleinstage)||0));
  const lab=document.querySelector('#kleinLab'),item=loc(activeLesson)?.l;
