@@ -1,0 +1,1 @@
+window.START_COURSES.push({"id":"formacao-freudiana","title":"Formação Psicanalítica Freudiana","subtitle":"Leitura cronológica e crítica da obra de Freud • 7 módulos • material original de apoio (não reproduz aulas de outra plataforma).","icon":"⌁","isSeed":true,"modules":[]});
