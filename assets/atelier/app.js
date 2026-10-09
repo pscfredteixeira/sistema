@@ -783,7 +783,7 @@ if(b.closest("#atelierLab, #lacanLab") && atHandle(b))return; if(b.closest("#lan
  if(b.dataset.fmanswer!==undefined){fmChooseAnswer(Number(b.dataset.fmanswer));return}
  if(b.dataset.fmtime!==undefined){fmStop();fmUpdateTime(Number(b.dataset.fmtime));fmSyncPlay();return}
  if(b.dataset.fmcontrol!==undefined){fmControl(b.dataset.fmcontrol);return}
-const action=b.dataset.action; if(action==='jumpLab'){let lab=document.querySelector('#winnicottLab,#lacExpansionLab,#kleinLab,#atelierLab,#languageLab,#lacanLab');if(lab)lab.scrollIntoView({behavior:matchMedia('(prefers-reduced-motion: reduce)').matches?'auto':'smooth',block:'start'});return}
+const action=b.dataset.action; if(action==='openDefesaGame'){openDefesaGame();return} if(action==='jumpLab'){let lab=document.querySelector('#winnicottLab,#lacExpansionLab,#kleinLab,#atelierLab,#languageLab,#lacanLab');if(lab)lab.scrollIntoView({behavior:matchMedia('(prefers-reduced-motion: reduce)').matches?'auto':'smooth',block:'start'});return}
 if(action==='toggleComplete'){progress[doneId(activeLesson)]=!isDone(activeLesson);save();render();return}
 if(action==='checkAnswer'){if(selectedAnswer===null)return;const item=loc(activeLesson).l;quizData[doneId(activeLesson)]={selected:selectedAnswer,checked:true};if(selectedAnswer===Number(item.quiz?.correct))progress[doneId(activeLesson)]=true;save();refreshNav();if(isDone(activeLesson)){const foot=$('.complete-strip .btn');if(foot){foot.textContent='✓ Concluída';foot.classList.remove('primary')}const lab=$('.lesson-tools > span');if(lab)lab.textContent='✓ Aula concluída';}$('#feedbackArea').innerHTML=`<div class="quiz-feedback ${selectedAnswer===Number(item.quiz?.correct)?'':'bad'}"><b>${selectedAnswer===Number(item.quiz?.correct)?'Resposta correta. Aula marcada como concluída.':'Ainda não é essa. Você pode tentar novamente.'}</b><br>${esc(item.quiz?.feedback||'')}</div>`;return}
 if(action==='closeModal'){closeModal();return}if(action==='newCourse'){editCourse();return}if(action==='newModule'){editModule();return}if(action==='newLesson'){if(!course().modules.length){toast('Crie primeiro um módulo.');editModule();return}editLesson();return}if(action==='manage'){manageDialog();return}if(action==='backup'){backupDialog();return}if(action==='export'){exportBackup();return}if(action==='import'){$('#importFile')?.click();return}if(action==='deleteEntity'){deleteEntity();return}if(action==='moveUp'){moveEntity(-1);return}if(action==='moveDown'){moveEntity(1);return}
@@ -793,6 +793,16 @@ document.addEventListener('submit',e=>{if(e.target.id==='editorForm'){e.preventD
 document.addEventListener('input',e=>{if(e.target.id==='sidebarSearch'){renderSidebar()}if(e.target.id==='noteField'&&activeLesson){notes[doneId(activeLesson)]=e.target.value;save();$('#noteStatus').textContent='✓ Anotação salva neste navegador.'}if(e.target.id==='glossarySearch'){let c=allLessons(),map=new Map();c.forEach(l=>(l.terms||[]).forEach(t=>{let key=t.term.toLowerCase();if(!map.has(key))map.set(key,{...t,lesson:l.id})}));let q=e.target.value.toLocaleLowerCase('pt-BR');$('#glossaryResults').innerHTML=[...map.values()].filter(t=>(t.term+' '+t.desc).toLocaleLowerCase('pt-BR').includes(q)).sort((a,b)=>a.term.localeCompare(b.term,'pt-BR')).map(t=>`<div class="dict-card"><h3>${esc(t.term)}</h3><p>${esc(t.desc)}</p><button data-lesson="${esc(t.lesson)}">Ver aula relacionada →</button></div>`).join('')||'<div class="empty">Nenhum conceito encontrado.</div>'}});
 document.addEventListener('change',e=>{if(e.target.id==='importFile')importBackup(e.target)});
 $('#shade').addEventListener('click',closeMobile);document.addEventListener('keydown',e=>{if(e.key==='Escape'){closeMobile();closeModal();$('#coursePicker').classList.add('hidden')}});
+function openDefesaGame(){
+ activeCourse='formacao-freudiana';
+ $('#sidebarSearch').value='';
+ goLesson('freud_a003');
+ save();
+ if(location.hash!=='#jogo-defesa') history.replaceState(null,'','#jogo-defesa');
+ const target=document.getElementById('fdg');
+ if(target)target.scrollIntoView({behavior:matchMedia('(prefers-reduced-motion: reduce)').matches?'auto':'smooth',block:'start'});
+}
 render();
+if(location.hash==='#jogo-defesa') openDefesaGame();
 // Persiste a inclusão de cursos novos após a migração aditiva.
 try{localStorage.setItem(KEYS.courses,JSON.stringify(courses))}catch(e){}
