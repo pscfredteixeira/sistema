@@ -385,3 +385,6 @@ body{background:var(--bg)}
  .lesson-tools .right-tools{order:3;width:100%;justify-content:flex-start}
 }
 
+
+/* Atelier mobile: lab typography */
+@media(max-width:760px){.reader .at-options button strong,.reader .lc-choices button span,.reader .ll-selections button strong{font-size:16px!important;line-height:1.45!important}}
